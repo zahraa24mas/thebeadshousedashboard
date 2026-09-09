@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Beads House — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --blue-deep:#4E86A4;
+    --blue:#7EB8D6;
+    --blue-baby:#AFD9EA;
+    --blue-pale:#E7F4F9;
+    --yellow:#F3D879;
+    --yellow-deep:#DDB94A;
+    --yellow-pale:#FBF3D6;
+    --cream:#FBF9F3;
+    --paper:#FFFFFF;
+    --ink:#332E27;
+    --ink-soft:#7A7364;
+    --line:#E7E1D2;
+    --good:#7FAE85;
+    --good-bg:#E7F3E4;
+    --need:#D9924F;
+    --need-bg:#FBEAD8;
+    --mid:#6FA6C9;
+    --mid-bg:#E4F0F7;
+    --bad:#C97A6C;
+    --bad-bg:#F8E7E2;
+    --radius:16px;
+    --shadow:0 2px 10px rgba(78,134,164,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.brandtext{font-family:'Fredoka',sans-serif;}
+  ::selection{background:var(--yellow); color:var(--ink);}
+
+  /* ---------- Layout ---------- */
+  .app{display:flex; min-height:100vh;}
+  .sidebar{
+    width:236px; flex-shrink:0;
+    background:linear-gradient(180deg,var(--blue-baby) 0%, var(--blue) 100%);
+    display:flex; flex-direction:column;
+    padding:22px 16px;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{display:flex; align-items:center; gap:12px; padding:6px 6px 22px 6px;}
+  .brand-logo{
+    width:52px; height:52px; border-radius:50%;
+    background:var(--blue-deep);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 0 rgba(0,0,0,0.08);
+    flex-shrink:0;
+  }
+  .brand-logo svg{width:34px; height:34px;}
+  .brand-text{line-height:1.15;}
+  .brand-text .name1{font-size:13.5px; font-weight:600; color:#fff; letter-spacing:0.3px;}
+  .brand-text .name2{font-size:13.5px; font-weight:600; color:var(--ink);}
+  .brand-text .sub{font-size:10.5px; color:rgba(51,46,39,0.65); margin-top:2px;}
+
+  nav.navlist{display:flex; flex-direction:column; gap:3px; margin-top:6px;}
+  .navitem{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:12px;
+    color:var(--ink); text-decoration:none;
+    font-size:13.5px; font-weight:500;
+    cursor:pointer; border:none; background:transparent;
+    text-align:left; width:100%;
+    transition:background .15s ease;
+  }
+  .navitem .dot{width:7px; height:7px; border-radius:50%; background:var(--blue-deep); flex-shrink:0;}
+  .navitem:hover{background:rgba(255,255,255,0.35);}
+  .navitem.active{background:var(--yellow); box-shadow:0 2px 0 rgba(0,0,0,0.06);}
+  .navitem.active .dot{background:var(--ink);}
+
+  .sidebar-foot{margin-top:auto; padding:14px 10px 4px; font-size:10.5px; color:rgba(51,46,39,0.55); line-height:1.5;}
+
+  main{flex:1; min-width:0; padding:26px 34px 60px;}
+  .topbar{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
+  .topbar h1{font-size:24px; margin:0; font-weight:600; color:var(--ink);}
+  .topbar .today{font-size:12.5px; color:var(--ink-soft);}
+  .savepill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11.5px; color:var(--good); background:var(--good-bg);
+    padding:5px 12px; border-radius:20px; font-weight:600;
+    opacity:0; transition:opacity .25s ease;
+  }
+  .savepill.show{opacity:1;}
+
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ---------- Beads divider (signature motif) ---------- */
+  .beads-divider{display:flex; align-items:center; gap:5px; margin:6px 0 16px;}
+  .beads-divider span{width:5px; height:5px; border-radius:50%; background:var(--blue-baby);}
+  .beads-divider span:nth-child(3n){background:var(--yellow);}
+  .section-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:2px;}
+  .section-head h2{font-size:17px; margin:0; font-weight:600;}
+  .section-sub{font-size:12.5px; color:var(--ink-soft); margin:2px 0 0;}
+
+  /* ---------- Cards ---------- */
+  .grid{display:grid; gap:16px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:1080px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--paper); border-radius:var(--radius);
+    border:1px dashed var(--blue-baby);
+    padding:16px 18px; box-shadow:var(--shadow);
+  }
+  .stat-card{position:relative; overflow:hidden;}
+  .stat-card .stat-label{font-size:11.5px; color:var(--ink-soft); font-weight:600; text-transform:none; letter-spacing:.2px;}
+  .stat-card .stat-value{font-size:24px; font-weight:700; margin-top:6px; font-family:'Fredoka',sans-serif;}
+  .stat-card .stat-note{font-size:11px; color:var(--ink-soft); margin-top:4px;}
+  .stat-card .stat-note.up{color:var(--good);}
+  .stat-card .stat-note.down{color:var(--bad);}
+  .stat-card::after{content:""; position:absolute; right:-18px; top:-18px; width:56px; height:56px; border-radius:50%; background:var(--yellow-pale); z-index:0;}
+  .stat-card > *{position:relative; z-index:1;}
+
+  .panel{background:var(--paper); border-radius:var(--radius); border:1px solid var(--line); box-shadow:var(--shadow); padding:18px 20px; margin-bottom:18px;}
+  .panel h3{margin:0 0 4px; font-size:15px; font-weight:600;}
+
+  /* ---------- Forms ---------- */
+  label{font-size:11.5px; font-weight:600; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  input,select,textarea{
+    font-family:'Inter',sans-serif; font-size:13.5px;
+    border:1px solid var(--line); border-radius:9px;
+    padding:8px 10px; background:#fff; color:var(--ink);
+    width:100%;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue-baby); outline-offset:1px; border-color:var(--blue);}
+  .field{margin-bottom:10px;}
+  .form-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end;}
+
+  button.btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    border:none; border-radius:10px; padding:9px 16px; cursor:pointer;
+    transition:transform .1s ease, box-shadow .15s ease;
+  }
+  button.btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--yellow); color:var(--ink); box-shadow:0 2px 0 var(--yellow-deep);}
+  .btn-primary:hover{background:var(--yellow-deep);}
+  .btn-ghost{background:transparent; color:var(--blue-deep); border:1px solid var(--blue-baby);}
+  .btn-ghost:hover{background:var(--blue-pale);}
+  .btn-danger{background:transparent; color:var(--bad); border:1px solid #ecc7bd;}
+  .btn-danger:hover{background:var(--bad-bg);}
+  .btn-sm{padding:5px 10px; font-size:11.5px; border-radius:8px;}
+
+  /* ---------- Tables ---------- */
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-size:11px; text-transform:none; color:var(--ink-soft); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line);}
+  td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .table-wrap{overflow-x:auto;}
+  td input, td select{padding:6px 8px; font-size:12.5px;}
+
+  .pill{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:20px;}
+  .pill.good{background:var(--good-bg); color:var(--good);}
+  .pill.need{background:var(--need-bg); color:var(--need);}
+  .pill.mid{background:var(--mid-bg); color:var(--mid);}
+  .pill.bad{background:var(--bad-bg); color:var(--bad);}
+  .pill.yellow{background:var(--yellow-pale); color:#8a6c1f;}
+
+  /* Product cards */
+  .product-card{display:flex; flex-direction:column; gap:10px;}
+  .product-card .pname{font-family:'Fredoka',sans-serif; font-size:17px; font-weight:600;}
+  .product-card .prow{display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--ink-soft);}
+
+  /* Kanban */
+  .kanban{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; overflow-x:auto;}
+  @media(max-width:1200px){.kanban{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:640px){.kanban{grid-template-columns:1fr;}}
+  .kcol{background:var(--blue-pale); border-radius:14px; padding:10px; min-height:120px;}
+  .kcol h4{margin:2px 6px 8px; font-size:12px; font-weight:700; color:var(--blue-deep);}
+  .kcard{background:#fff; border-radius:10px; padding:9px 10px; margin-bottom:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); font-size:12.5px;}
+  .kcard .ktitle{font-weight:600; margin-bottom:6px;}
+  .kcard select{font-size:11px; padding:4px 6px;}
+  .kcard .kdel{float:right; cursor:pointer; color:var(--bad); font-size:11px; border:none; background:none;}
+
+  .chart-box{height:230px; position:relative;}
+  .empty-note{font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:6px 0;}
+
+  .progress-outer{background:var(--blue-pale); border-radius:20px; height:14px; overflow:hidden; margin-top:8px;}
+  .progress-inner{background:linear-gradient(90deg,var(--blue),var(--yellow)); height:100%; border-radius:20px; transition:width .4s ease;}
+
+  .hamburger{display:none;}
+  @media(max-width:880px){
+    .sidebar{position:fixed; z-index:50; left:-260px; transition:left .2s ease; box-shadow:4px 0 18px rgba(0,0,0,0.15);}
+    .sidebar.open{left:0;}
+    .hamburger{display:flex; align-items:center; gap:8px; background:var(--paper); border:1px solid var(--line); padding:8px 12px; border-radius:10px; margin-bottom:14px; cursor:pointer; font-weight:600; font-size:13px;}
+    main{padding:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="30" cy="30" r="28" fill="none" stroke="#F3D879" stroke-width="2" stroke-dasharray="3 4"/>
+          <text x="30" y="26" text-anchor="middle" fill="#fff" font-family="Fredoka, sans-serif" font-size="9.5" font-weight="700">THE BEADS</text>
+          <text x="30" y="38" text-anchor="middle" fill="#fff" font-family="Fredoka, sans-serif" font-size="9.5" font-weight="700">HOUSE</text>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="name1">The Beads House</div>
+        <div class="name2">Dashboard</div>
+        <div class="sub">Handmade in Oman</div>
+      </div>
+    </div>
+    <nav class="navlist" id="navlist">
+      <button class="navitem" data-page="overview"><span class="dot"></span>Overview</button>
+      <button class="navitem" data-page="products"><span class="dot"></span>Products</button>
+      <button class="navitem" data-page="financial"><span class="dot"></span>Financial</button>
+      <button class="navitem" data-page="profit"><span class="dot"></span>Profit</button>
+      <button class="navitem" data-page="inventory"><span class="dot"></span>Inventory</button>
+      <button class="navitem" data-page="orders"><span class="dot"></span>Orders</button>
+      <button class="navitem" data-page="customers"><span class="dot"></span>Customers</button>
+      <button class="navitem" data-page="marketing"><span class="dot"></span>Marketing</button>
+      <button class="navitem" data-page="content"><span class="dot"></span>Content Planner</button>
+      <button class="navitem" data-page="production"><span class="dot"></span>Production</button>
+    </nav>
+    <div class="sidebar-foot">All data is saved on this device only, in this browser.</div>
+  </aside>
+
+  <main>
+    <div class="hamburger" id="hamburger">☰ Menu</div>
+
+    <!-- OVERVIEW -->
+    <div class="page" id="page-overview">
+      <div class="topbar">
+        <div><h1>Overview</h1><div class="today" id="todayLabel"></div></div>
+        <span class="savepill" id="savepill-overview">✓ Saved</span>
+      </div>
+
+      <div class="grid grid-4" id="ov-stats"></div>
+
+      <div class="grid grid-3" style="margin-top:16px;">
+        <div class="panel">
+          <h3>Most sold product</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div id="ov-bestseller"></div>
+        </div>
+        <div class="panel">
+          <h3>Products available now</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div id="ov-available"></div>
+        </div>
+        <div class="panel">
+          <h3>Instagram followers</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div id="ov-followers"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:2px;">
+        <h3>This month's sales vs target</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row" style="max-width:260px; margin-bottom:8px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Monthly sales target (OMR)</label>
+            <input type="number" id="ov-target-input" step="0.001" min="0">
+          </div>
+          <button class="btn btn-primary btn-sm" id="ov-target-save">Save target</button>
+        </div>
+        <div id="ov-target-text" class="section-sub"></div>
+        <div class="progress-outer"><div class="progress-inner" id="ov-progress-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="page-products">
+      <div class="topbar">
+        <div><h1>Products</h1><div class="today">Price, cost and status for each handmade product</div></div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="savepill" id="savepill-products">✓ Saved</span>
+          <button class="btn btn-primary btn-sm" id="prod-add-toggle">+ Add product</button>
+        </div>
+      </div>
+
+      <div class="panel" id="prod-add-panel" style="display:none;">
+        <h3>New product</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field"><label>Product name</label><input type="text" id="prod-new-name" placeholder="e.g. Keychain"></div>
+          <div class="field"><label>Price (OMR)</label><input type="number" id="prod-new-price" min="0" step="0.001" value="0"></div>
+          <div class="field"><label>Cost (OMR)</label><input type="number" id="prod-new-cost" min="0" step="0.001" value="0"></div>
+          <div class="field"><label>Status</label>
+            <select id="prod-new-status"><option value="idea">Idea</option><option value="progress">In progress</option><option value="available">Available</option></select>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" id="prod-new-save">Save product</button>
+          <button class="btn btn-ghost" id="prod-new-cancel">Cancel</button>
+        </div>
+      </div>
+
+      <div class="grid grid-2" id="products-list"></div>
+    </div>
+
+    <!-- FINANCIAL -->
+    <div class="page" id="page-financial">
+      <div class="topbar">
+        <div><h1>Financial Dashboard</h1><div class="today">Revenue and expenses</div></div>
+        <span class="savepill" id="savepill-financial">✓ Saved</span>
+      </div>
+
+      <div class="grid grid-4" id="fin-revenue-stats"></div>
+
+      <div class="grid grid-2" style="margin-top:16px; align-items:start;">
+        <div class="panel">
+          <h3>Add a sale (revenue)</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div class="form-row">
+            <div class="field"><label>Date</label><input type="date" id="rev-date"></div>
+            <div class="field"><label>Product</label><select id="rev-product"></select></div>
+            <div class="field"><label>Qty</label><input type="number" id="rev-qty" min="1" value="1"></div>
+            <div class="field"><label>Amount (OMR)</label><input type="number" id="rev-amount" min="0" step="0.001"></div>
+          </div>
+          <button class="btn btn-primary" id="rev-add">Save sale</button>
+          <div class="table-wrap" style="margin-top:14px;"><table id="rev-table"><thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div class="panel">
+          <h3>Add an expense</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div class="form-row">
+            <div class="field"><label>Date</label><input type="date" id="exp-date"></div>
+            <div class="field"><label>Category</label>
+              <select id="exp-category">
+                <option>Beads</option><option>Fabric</option><option>T-Shirts</option><option>Pouches material</option>
+                <option>Packaging</option><option>Stickers</option><option>Instagram Ads</option><option>Delivery</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Amount (OMR)</label><input type="number" id="exp-amount" min="0" step="0.001"></div>
+          </div>
+          <div class="field"><label>Note (optional)</label><input type="text" id="exp-note" placeholder="e.g. 200 gold beads"></div>
+          <button class="btn btn-primary" id="exp-add">Save expense</button>
+          <div class="table-wrap" style="margin-top:14px;"><table id="exp-table"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Revenue per product</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="chart-box"><canvas id="chart-rev-product"></canvas></div>
+      </div>
+    </div>
+
+    <!-- PROFIT -->
+    <div class="page" id="page-profit">
+      <div class="topbar">
+        <div><h1>Profit Dashboard</h1><div class="today">Revenue minus expenses</div></div>
+      </div>
+      <div class="grid grid-3" id="profit-stats"></div>
+      <div class="grid grid-2" style="margin-top:16px;">
+        <div class="panel">
+          <h3>Profit per product</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div id="profit-per-product"></div>
+        </div>
+        <div class="panel">
+          <h3>Profit — this month</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div class="chart-box"><canvas id="chart-profit-month"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="page" id="page-inventory">
+      <div class="topbar">
+        <div><h1>Inventory Dashboard</h1><div class="today">Raw materials and finished products</div></div>
+        <span class="savepill" id="savepill-inventory">✓ Saved</span>
+      </div>
+      <div class="panel">
+        <div class="section-head">
+          <h3 style="margin:0;">Add inventory item</h3>
+        </div>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field"><label>Item name</label><input type="text" id="inv-name" placeholder="e.g. Gold beads, T-Shirt (blank)"></div>
+          <div class="field"><label>Type</label><select id="inv-type"><option value="raw">Raw material</option><option value="product">Finished product</option></select></div>
+          <div class="field"><label>Quantity</label><input type="number" id="inv-qty" min="0"></div>
+          <div class="field"><label>Status</label><select id="inv-status"><option value="good">Good</option><option value="need">Need to buy</option></select></div>
+        </div>
+        <button class="btn btn-primary" id="inv-add">Save item</button>
+      </div>
+      <div class="grid grid-2">
+        <div class="panel">
+          <h3>Raw materials</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div class="table-wrap"><table id="inv-table-raw"><thead><tr><th>Item</th><th>Qty</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="panel">
+          <h3>Finished products</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div class="table-wrap"><table id="inv-table-product"><thead><tr><th>Item</th><th>Qty</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="page" id="page-orders">
+      <div class="topbar">
+        <div><h1>Orders Dashboard</h1><div class="today">Track every order from new to delivered</div></div>
+        <span class="savepill" id="savepill-orders">✓ Saved</span>
+      </div>
+      <div class="grid grid-4" id="orders-stats" style="margin-bottom:16px;"></div>
+      <div class="panel">
+        <h3>Add order</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field"><label>Customer name</label><input type="text" id="ord-customer"></div>
+          <div class="field"><label>Product</label><select id="ord-product"></select></div>
+          <div class="field"><label>Qty</label><input type="number" id="ord-qty" min="1" value="1"></div>
+          <div class="field"><label>Date</label><input type="date" id="ord-date"></div>
+        </div>
+        <button class="btn btn-primary" id="ord-add">Save order</button>
+      </div>
+      <div class="panel">
+        <h3>All orders</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="table-wrap"><table id="ord-table"><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="page" id="page-customers">
+      <div class="topbar">
+        <div><h1>Customers Dashboard</h1><div class="today">From Instagram DMs and orders</div></div>
+        <span class="savepill" id="savepill-customers">✓ Saved</span>
+      </div>
+      <div class="grid grid-3" id="cust-stats" style="margin-bottom:16px;"></div>
+      <div class="panel">
+        <h3>Add customer</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field"><label>Name / Instagram handle</label><input type="text" id="cust-name"></div>
+          <div class="field"><label>Type</label><select id="cust-type"><option value="new">New</option><option value="returning">Returning</option></select></div>
+          <div class="field"><label>Total spent (OMR)</label><input type="number" id="cust-spent" min="0" step="0.001" value="0"></div>
+        </div>
+        <button class="btn btn-primary" id="cust-add">Save customer</button>
+      </div>
+      <div class="grid grid-2">
+        <div class="panel">
+          <h3>Top customers</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div id="cust-top"></div>
+        </div>
+        <div class="panel">
+          <h3>All customers</h3>
+          <div class="beads-divider"><span></span><span></span><span></span></div>
+          <div class="table-wrap"><table id="cust-table"><thead><tr><th>Name</th><th>Type</th><th>Spent</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MARKETING -->
+    <div class="page" id="page-marketing">
+      <div class="topbar">
+        <div><h1>Marketing Dashboard</h1><div class="today">Instagram growth and engagement</div></div>
+        <span class="savepill" id="savepill-marketing">✓ Saved</span>
+      </div>
+      <div class="panel">
+        <h3>Add a snapshot</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field"><label>Date</label><input type="date" id="mk-date"></div>
+          <div class="field"><label>Total followers</label><input type="number" id="mk-followers" min="0"></div>
+          <div class="field"><label>New followers</label><input type="number" id="mk-new" min="0" value="0"></div>
+          <div class="field"><label>Unfollows</label><input type="number" id="mk-unfollow" min="0" value="0"></div>
+          <div class="field"><label>Profile visits</label><input type="number" id="mk-visits" min="0" value="0"></div>
+          <div class="field"><label>Engagement</label><input type="number" id="mk-engagement" min="0" value="0"></div>
+          <div class="field"><label>Story views</label><input type="number" id="mk-storyviews" min="0" value="0"></div>
+          <div class="field"><label>Reviews</label><input type="number" id="mk-reviews" min="0" value="0"></div>
+        </div>
+        <button class="btn btn-primary" id="mk-add">Save snapshot</button>
+      </div>
+      <div class="grid grid-4" id="mk-stats" style="margin-bottom:16px;"></div>
+      <div class="panel">
+        <h3>Followers growth</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="chart-box"><canvas id="chart-followers"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>History</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="table-wrap"><table id="mk-table"><thead><tr><th>Date</th><th>Followers</th><th>New</th><th>Unfollows</th><th>Visits</th><th>Engagement</th><th>Story views</th><th>Reviews</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- CONTENT PLANNER -->
+    <div class="page" id="page-content">
+      <div class="topbar">
+        <div><h1>Content Planner</h1><div class="today">From idea to posted</div></div>
+        <span class="savepill" id="savepill-content">✓ Saved</span>
+      </div>
+      <div class="panel">
+        <h3>Add content idea</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field" style="grid-column:span 2;"><label>Idea / title</label><input type="text" id="ct-title" placeholder="e.g. Reel: beaded pouch process"></div>
+          <div class="field"><label>Stage</label>
+            <select id="ct-stage"><option value="idea">Idea</option><option value="plan">Plan</option><option value="filming">Filming</option><option value="editing">Editing</option><option value="scheduled">Scheduled</option><option value="posted">Posted</option></select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="ct-add">Save idea</button>
+      </div>
+      <div class="kanban" id="content-kanban"></div>
+    </div>
+
+    <!-- PRODUCTION -->
+    <div class="page" id="page-production">
+      <div class="topbar">
+        <div><h1>Production Dashboard</h1><div class="today">What's currently being made</div></div>
+        <span class="savepill" id="savepill-production">✓ Saved</span>
+      </div>
+      <div class="panel">
+        <h3>Add production item</h3>
+        <div class="beads-divider"><span></span><span></span><span></span></div>
+        <div class="form-row">
+          <div class="field"><label>Item</label><input type="text" id="pr-item" placeholder="e.g. Pouch — blue floral"></div>
+          <div class="field"><label>Qty</label><input type="number" id="pr-qty" min="1" value="1"></div>
+          <div class="field"><label>Stage</label>
+            <select id="pr-stage"><option value="queued">Queued</option><option value="cutting">Cutting</option><option value="embroidering">Embroidering</option><option value="assembling">Assembling</option><option value="finishing">Finishing</option><option value="ready">Ready</option></select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="pr-add">Save item</button>
+      </div>
+      <div class="kanban" id="production-kanban"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ===================== DATA LAYER ===================== */
+const DB_KEY = 'beadsHouseDB_v1';
+
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function defaultDB(){
+  return {
+    meta:{ monthlyTarget: 0 },
+    products:[
+      {id:'tshirt', name:'T-Shirt', price:0, cost:0, status:'idea'},
+      {id:'pouch', name:'Pouches', price:0, cost:0, status:'idea'}
+    ],
+    revenue:[],   // {id,date,productId,qty,amount}
+    expenses:[],  // {id,date,category,amount,note}
+    inventory:[], // {id,name,type,qty,status}
+    orders:[],    // {id,customer,productId,qty,status,date}
+    customers:[], // {id,name,type,spent}
+    marketing:[], // {id,date,followers,newF,unfollow,visits,engagement,storyviews,reviews}
+    content:[],   // {id,title,stage}
+    production:[] // {id,item,qty,stage}
+  };
+}
+
+let DB = loadDB();
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(!raw) return defaultDB();
+    const parsed = JSON.parse(raw);
+    const d = defaultDB();
+    return Object.assign(d, parsed, {
+      products: parsed.products && parsed.products.length ? parsed.products : d.products,
+      meta: Object.assign(d.meta, parsed.meta||{})
+    });
+  }catch(e){ return defaultDB(); }
+}
+
+let saveTimer=null;
+function saveDB(pageKey){
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  if(pageKey){
+    const pill = document.getElementById('savepill-'+pageKey);
+    if(pill){
+      pill.classList.add('show');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(()=>pill.classList.remove('show'), 1400);
+    }
+  }
+}
+
+/* ===================== HELPERS ===================== */
+function fmtMoney(n){
+  n = Number(n)||0;
+  return n.toLocaleString('en-US',{minimumFractionDigits:3, maximumFractionDigits:3}) + ' OMR';
+}
+function fmtNum(n){ return Number(n||0).toLocaleString('en-US'); }
+function productName(id){ const p = DB.products.find(p=>p.id===id); return p? p.name : '—'; }
+function monthKey(dateStr){ return (dateStr||'').slice(0,7); }
+function isSameWeek(dateStr){
+  const d = new Date(dateStr); const now = new Date();
+  const start = new Date(now); start.setDate(now.getDate()-now.getDay());
+  start.setHours(0,0,0,0);
+  const end = new Date(start); end.setDate(start.getDate()+7);
+  return d>=start && d<end;
+}
+function statusPill(status, map){
+  const m = map[status] || {label:status, cls:'mid'};
+  return `<span class="pill ${m.cls}">${m.label}</span>`;
+}
+
+const PRODUCT_STATUS = {
+  idea:{label:'Idea', cls:'need'},
+  progress:{label:'In progress', cls:'mid'},
+  available:{label:'Available', cls:'good'}
+};
+const ORDER_STATUS = {
+  new:{label:'New', cls:'need'},
+  embroidering:{label:'Embroidering', cls:'mid'},
+  ready:{label:'Ready', cls:'yellow'},
+  delivered:{label:'Delivered', cls:'good'},
+  canceled:{label:'Canceled', cls:'bad'}
+};
+const CONTENT_STAGES = [
+  ['idea','Idea'],['plan','Plan'],['filming','Filming'],['editing','Editing'],['scheduled','Scheduled'],['posted','Posted']
+];
+const PRODUCTION_STAGES = [
+  ['queued','Queued'],['cutting','Cutting'],['embroidering','Embroidering'],['assembling','Assembling'],['finishing','Finishing'],['ready','Ready']
+];
+
+/* ===================== NAVIGATION ===================== */
+const pages = ['overview','products','financial','profit','inventory','orders','customers','marketing','content','production'];
+function showPage(p){
+  pages.forEach(name=>{
+    document.getElementById('page-'+name).classList.toggle('active', name===p);
+  });
+  document.querySelectorAll('.navitem').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.page===p);
+  });
+  document.getElementById('sidebar').classList.remove('open');
+  renderAll(p);
+  window.scrollTo(0,0);
+}
+document.getElementById('navlist').addEventListener('click', e=>{
+  const btn = e.target.closest('.navitem');
+  if(btn) showPage(btn.dataset.page);
+});
+document.getElementById('hamburger').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ===================== RENDER: OVERVIEW ===================== */
+function computeTotals(){
+  const totalRevenue = DB.revenue.reduce((s,r)=>s+Number(r.amount||0),0);
+  const totalExpenses = DB.expenses.reduce((s,e)=>s+Number(e.amount||0),0);
+  return {totalRevenue, totalExpenses, netIncome: totalRevenue-totalExpenses};
+}
+function renderOverview(){
+  const {totalRevenue, totalExpenses, netIncome} = computeTotals();
+  const today = todayStr();
+  const thisMonth = today.slice(0,7);
+  const monthRevenue = DB.revenue.filter(r=>monthKey(r.date)===thisMonth).reduce((s,r)=>s+Number(r.amount||0),0);
+
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  const stats = [
+    {label:'Total revenue', value:fmtMoney(totalRevenue)},
+    {label:'Total expenses', value:fmtMoney(totalExpenses)},
+    {label:'Net income', value:fmtMoney(netIncome)},
+    {label:'Total orders', value:fmtNum(DB.orders.length)}
+  ];
+  document.getElementById('ov-stats').innerHTML = stats.map(s=>`
+    <div class="card stat-card"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>
+  `).join('');
+
+  // best seller
+  const qtyByProduct = {};
+  DB.revenue.forEach(r=>{ qtyByProduct[r.productId] = (qtyByProduct[r.productId]||0) + Number(r.qty||0); });
+  const bestId = Object.keys(qtyByProduct).sort((a,b)=>qtyByProduct[b]-qtyByProduct[a])[0];
+  document.getElementById('ov-bestseller').innerHTML = bestId
+    ? `<div class="stat-value" style="font-size:19px;">${productName(bestId)}</div><div class="section-sub">${fmtNum(qtyByProduct[bestId])} sold</div>`
+    : `<div class="empty-note">No sales logged yet.</div>`;
+
+  // available products
+  const availableList = DB.products.filter(p=>p.status==='available');
+  document.getElementById('ov-available').innerHTML = availableList.length
+    ? availableList.map(p=>`<div style="margin-bottom:4px;">${p.name} ${statusPill(p.status, PRODUCT_STATUS)}</div>`).join('')
+    : `<div class="empty-note">No product marked available yet.</div>`;
+
+  // followers
+  const mk = [...DB.marketing].sort((a,b)=>a.date.localeCompare(b.date));
+  const last = mk[mk.length-1];
+  const prev = mk[mk.length-2];
+  if(last){
+    const growth = prev ? last.followers - prev.followers : last.newF||0;
+    document.getElementById('ov-followers').innerHTML = `
+      <div class="stat-value" style="font-size:19px;">${fmtNum(last.followers)}</div>
+      <div class="stat-note ${growth>=0?'up':'down'}">${growth>=0?'+':''}${fmtNum(growth)} since last update</div>`;
+  } else {
+    document.getElementById('ov-followers').innerHTML = `<div class="empty-note">Add a marketing snapshot to see followers.</div>`;
+  }
+
+  // customers count card injected into stats row visually via available card row — keep simple: add extra row
+  // target
+  document.getElementById('ov-target-input').value = DB.meta.monthlyTarget || '';
+  const target = Number(DB.meta.monthlyTarget||0);
+  const pct = target>0 ? Math.min(100, (monthRevenue/target)*100) : 0;
+  document.getElementById('ov-progress-bar').style.width = pct+'%';
+  document.getElementById('ov-target-text').textContent = target>0
+    ? `${fmtMoney(monthRevenue)} of ${fmtMoney(target)} target this month (${pct.toFixed(0)}%)`
+    : `Set a monthly target to track progress. This month's sales so far: ${fmtMoney(monthRevenue)}.`;
+
+  // extra: customers count as an additional stat card appended
+  document.getElementById('ov-stats').innerHTML += `
+    <div class="card stat-card"><div class="stat-label">Customers</div><div class="stat-value">${fmtNum(DB.customers.length)}</div></div>
+  `;
+}
+document.getElementById('ov-target-save').addEventListener('click', ()=>{
+  DB.meta.monthlyTarget = Number(document.getElementById('ov-target-input').value)||0;
+  saveDB('overview'); renderOverview();
+});
+
+/* ===================== RENDER: PRODUCTS ===================== */
+function renderProducts(){
+  document.getElementById('products-list').innerHTML = DB.products.map(p=>`
+    <div class="card product-card">
+      <div class="section-head">
+        <div class="pname">${p.name}</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${statusPill(p.status, PRODUCT_STATUS)}
+          <button class="btn-danger btn btn-sm prod-delete" data-pid="${p.id}" title="Delete product">✕</button>
+        </div>
+      </div>
+      <div class="beads-divider"><span></span><span></span><span></span></div>
+      <div class="form-row">
+        <div class="field"><label>Price (OMR)</label><input type="number" min="0" step="0.001" value="${p.price}" data-pid="${p.id}" data-field="price" class="prod-input"></div>
+        <div class="field"><label>Cost (OMR)</label><input type="number" min="0" step="0.001" value="${p.cost}" data-pid="${p.id}" data-field="cost" class="prod-input"></div>
+        <div class="field"><label>Status</label>
+          <select data-pid="${p.id}" data-field="status" class="prod-input">
+            <option value="idea" ${p.status==='idea'?'selected':''}>Idea</option>
+            <option value="progress" ${p.status==='progress'?'selected':''}>In progress</option>
+            <option value="available" ${p.status==='available'?'selected':''}>Available</option>
+          </select>
+        </div>
+      </div>
+      <div class="prow"><span>Margin per piece</span><strong>${fmtMoney((p.price||0)-(p.cost||0))}</strong></div>
+      <button class="btn btn-primary btn-sm prod-save" data-pid="${p.id}">Save</button>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.prod-save').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const pid = btn.dataset.pid;
+      const p = DB.products.find(x=>x.id===pid);
+      document.querySelectorAll(`.prod-input[data-pid="${pid}"]`).forEach(inp=>{
+        const f = inp.dataset.field;
+        p[f] = (f==='price'||f==='cost') ? Number(inp.value)||0 : inp.value;
+      });
+      saveDB('products'); renderProducts(); renderOverview(); populateProductSelects();
+    });
+  });
+
+  document.querySelectorAll('.prod-delete').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const pid = btn.dataset.pid;
+      const p = DB.products.find(x=>x.id===pid);
+      if(!confirm(`Delete "${p.name}"? This won't remove past sales or orders already recorded for it.`)) return;
+      DB.products = DB.products.filter(x=>x.id!==pid);
+      saveDB('products'); renderProducts(); renderOverview(); populateProductSelects();
+    });
+  });
+}
+
+document.getElementById('prod-add-toggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('prod-add-panel');
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+  if(panel.style.display==='block') document.getElementById('prod-new-name').focus();
+});
+document.getElementById('prod-new-cancel').addEventListener('click', ()=>{
+  document.getElementById('prod-add-panel').style.display = 'none';
+});
+document.getElementById('prod-new-save').addEventListener('click', ()=>{
+  const name = document.getElementById('prod-new-name').value.trim();
+  if(!name) return;
+  DB.products.push({
+    id: uid(),
+    name,
+    price: Number(document.getElementById('prod-new-price').value)||0,
+    cost: Number(document.getElementById('prod-new-cost').value)||0,
+    status: document.getElementById('prod-new-status').value
+  });
+  saveDB('products');
+  document.getElementById('prod-new-name').value='';
+  document.getElementById('prod-new-price').value='0';
+  document.getElementById('prod-new-cost').value='0';
+  document.getElementById('prod-new-status').value='idea';
+  document.getElementById('prod-add-panel').style.display='none';
+  renderProducts(); renderOverview(); populateProductSelects();
+});
+
+function populateProductSelects(){
+  const opts = DB.products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  ['rev-product','ord-product'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ const cur = el.value; el.innerHTML = opts; if(cur) el.value = cur; }
+  });
+}
+
+/* ===================== RENDER: FINANCIAL ===================== */
+let chartRevProduct=null, chartProfitMonth=null, chartFollowers=null;
+
+function renderFinancial(){
+  const today = todayStr();
+  const dayRevenue = DB.revenue.filter(r=>r.date===today).reduce((s,r)=>s+Number(r.amount||0),0);
+  const weekRevenue = DB.revenue.filter(r=>isSameWeek(r.date)).reduce((s,r)=>s+Number(r.amount||0),0);
+  const monthRevenue = DB.revenue.filter(r=>monthKey(r.date)===today.slice(0,7)).reduce((s,r)=>s+Number(r.amount||0),0);
+  const totalRevenue = DB.revenue.reduce((s,r)=>s+Number(r.amount||0),0);
+
+  document.getElementById('fin-revenue-stats').innerHTML = [
+    ['Today', dayRevenue], ['This week', weekRevenue], ['This month', monthRevenue], ['Total', totalRevenue]
+  ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l} revenue</div><div class="stat-value">${fmtMoney(v)}</div></div>`).join('');
+
+  // revenue table
+  const revBody = document.getElementById('rev-table').querySelector('tbody');
+  revBody.innerHTML = [...DB.revenue].sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`
+    <tr>
+      <td>${r.date}</td><td>${productName(r.productId)}</td><td>${fmtNum(r.qty)}</td><td>${fmtMoney(r.amount)}</td>
+      <td><button class="btn-danger btn btn-sm" data-del-rev="${r.id}">✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="5" class="empty-note">No sales logged yet.</td></tr>`;
+  revBody.querySelectorAll('[data-del-rev]').forEach(b=>b.addEventListener('click', ()=>{
+    DB.revenue = DB.revenue.filter(r=>r.id!==b.dataset.delRev); saveDB('financial'); renderAll('financial'); renderOverview();
+  }));
+
+  // expenses table
+  const expBody = document.getElementById('exp-table').querySelector('tbody');
+  expBody.innerHTML = [...DB.expenses].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`
+    <tr>
+      <td>${x.date}</td><td>${x.category}${x.note?`<div class="section-sub">${x.note}</div>`:''}</td><td>${fmtMoney(x.amount)}</td>
+      <td><button class="btn-danger btn btn-sm" data-del-exp="${x.id}">✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="4" class="empty-note">No expenses logged yet.</td></tr>`;
+  expBody.querySelectorAll('[data-del-exp]').forEach(b=>b.addEventListener('click', ()=>{
+    DB.expenses = DB.expenses.filter(x=>x.id!==b.dataset.delExp); saveDB('financial'); renderAll('financial'); renderOverview();
+  }));
+
+  // chart: revenue per product
+  const byProduct = {};
+  DB.products.forEach(p=>byProduct[p.id]=0);
+  DB.revenue.forEach(r=>{ byProduct[r.productId] = (byProduct[r.productId]||0) + Number(r.amount||0); });
+  const ctx = document.getElementById('chart-rev-product');
+  if(chartRevProduct) chartRevProduct.destroy();
+  chartRevProduct = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: DB.products.map(p=>p.name), datasets:[{ label:'Revenue (OMR)', data: DB.products.map(p=>byProduct[p.id]||0), backgroundColor:['#7EB8D6','#F3D879','#DDB94A','#AFD9EA'] }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+  });
+}
+document.getElementById('rev-add').addEventListener('click', ()=>{
+  const date = document.getElementById('rev-date').value || todayStr();
+  const productId = document.getElementById('rev-product').value;
+  const qty = Number(document.getElementById('rev-qty').value)||1;
+  const amount = Number(document.getElementById('rev-amount').value)||0;
+  if(!productId || amount<=0) return;
+  DB.revenue.push({id:uid(), date, productId, qty, amount});
+  saveDB('financial');
+  document.getElementById('rev-amount').value='';
+  renderFinancial(); renderOverview(); renderProfitPage();
+});
+document.getElementById('exp-add').addEventListener('click', ()=>{
+  const date = document.getElementById('exp-date').value || todayStr();
+  const category = document.getElementById('exp-category').value;
+  const amount = Number(document.getElementById('exp-amount').value)||0;
+  const note = document.getElementById('exp-note').value.trim();
+  if(amount<=0) return;
+  DB.expenses.push({id:uid(), date, category, amount, note});
+  saveDB('financial');
+  document.getElementById('exp-amount').value=''; document.getElementById('exp-note').value='';
+  renderFinancial(); renderOverview(); renderProfitPage();
+});
+
+/* ===================== RENDER: PROFIT ===================== */
+function renderProfitPage(){
+  const {totalRevenue, totalExpenses, netIncome} = computeTotals();
+  const today = todayStr();
+  const thisMonth = today.slice(0,7);
+  const monthRevenue = DB.revenue.filter(r=>monthKey(r.date)===thisMonth).reduce((s,r)=>s+Number(r.amount||0),0);
+  const monthExpenses = DB.expenses.filter(e=>monthKey(e.date)===thisMonth).reduce((s,e)=>s+Number(e.amount||0),0);
+  const monthProfit = monthRevenue-monthExpenses;
+
+  document.getElementById('profit-stats').innerHTML = [
+    ['Net profit (all time)', netIncome],
+    ['Profit this month', monthProfit],
+    ['Revenue this month', monthRevenue]
+  ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${fmtMoney(v)}</div></div>`).join('');
+
+  // profit per product = revenue - (cost*qty)
+  const revByProduct={}, qtyByProduct={};
+  DB.revenue.forEach(r=>{ revByProduct[r.productId]=(revByProduct[r.productId]||0)+Number(r.amount||0); qtyByProduct[r.productId]=(qtyByProduct[r.productId]||0)+Number(r.qty||0); });
+  document.getElementById('profit-per-product').innerHTML = DB.products.map(p=>{
+    const rev = revByProduct[p.id]||0; const qty = qtyByProduct[p.id]||0;
+    const cost = qty*(p.cost||0);
+    const profit = rev-cost;
+    return `<div class="prow" style="padding:8px 0; border-bottom:1px solid var(--line);">
+      <span>${p.name} <span class="section-sub">(${fmtNum(qty)} sold)</span></span><strong>${fmtMoney(profit)}</strong>
+    </div>`;
+  }).join('');
+
+  // month profit trend (last 6 months)
+  const months = [];
+  const d = new Date();
+  for(let i=5;i>=0;i--){ const m = new Date(d.getFullYear(), d.getMonth()-i, 1); months.push(m.toISOString().slice(0,7)); }
+  const profitByMonth = months.map(m=>{
+    const rev = DB.revenue.filter(r=>monthKey(r.date)===m).reduce((s,r)=>s+Number(r.amount||0),0);
+    const exp = DB.expenses.filter(e=>monthKey(e.date)===m).reduce((s,e)=>s+Number(e.amount||0),0);
+    return rev-exp;
+  });
+  const ctx = document.getElementById('chart-profit-month');
+  if(chartProfitMonth) chartProfitMonth.destroy();
+  chartProfitMonth = new Chart(ctx, {
+    type:'line',
+    data:{ labels: months, datasets:[{ label:'Net profit (OMR)', data: profitByMonth, borderColor:'#4E86A4', backgroundColor:'rgba(126,184,214,0.25)', fill:true, tension:0.35 }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+  });
+}
+
+/* ===================== RENDER: INVENTORY ===================== */
+function renderInventory(){
+  const rawRows = DB.inventory.filter(i=>i.type==='raw');
+  const prodRows = DB.inventory.filter(i=>i.type==='product');
+  function rows(list){
+    return list.map(i=>`
+      <tr>
+        <td>${i.name}</td><td>${fmtNum(i.qty)}</td>
+        <td>${statusPill(i.status, {good:{label:'Good',cls:'good'}, need:{label:'Need to buy',cls:'need'}})}</td>
+        <td><button class="btn-danger btn btn-sm" data-del-inv="${i.id}">✕</button></td>
+      </tr>`).join('') || `<tr><td colspan="4" class="empty-note">Nothing added yet.</td></tr>`;
+  }
+  document.getElementById('inv-table-raw').querySelector('tbody').innerHTML = rows(rawRows);
+  document.getElementById('inv-table-product').querySelector('tbody').innerHTML = rows(prodRows);
+  document.querySelectorAll('[data-del-inv]').forEach(b=>b.addEventListener('click', ()=>{
+    DB.inventory = DB.inventory.filter(i=>i.id!==b.dataset.delInv); saveDB('inventory'); renderInventory();
+  }));
+}
+document.getElementById('inv-add').addEventListener('click', ()=>{
+  const name = document.getElementById('inv-name').value.trim();
+  if(!name) return;
+  DB.inventory.push({
+    id:uid(), name, type:document.getElementById('inv-type').value,
+    qty:Number(document.getElementById('inv-qty').value)||0,
+    status:document.getElementById('inv-status').value
+  });
+  saveDB('inventory');
+  document.getElementById('inv-name').value=''; document.getElementById('inv-qty').value='';
+  renderInventory();
+});
+
+/* ===================== RENDER: ORDERS ===================== */
+function renderOrders(){
+  const counts = {new:0, embroidering:0, ready:0, delivered:0, canceled:0};
+  DB.orders.forEach(o=>{ if(counts[o.status]!==undefined) counts[o.status]++; });
+  document.getElementById('orders-stats').innerHTML = Object.keys(ORDER_STATUS).map(k=>`
+    <div class="card stat-card"><div class="stat-label">${ORDER_STATUS[k].label}</div><div class="stat-value">${fmtNum(counts[k])}</div></div>
+  `).join('');
+
+  const body = document.getElementById('ord-table').querySelector('tbody');
+  body.innerHTML = [...DB.orders].sort((a,b)=>b.date.localeCompare(a.date)).map(o=>`
+    <tr>
+      <td>${o.date}</td><td>${o.customer}</td><td>${productName(o.productId)}</td><td>${fmtNum(o.qty)}</td>
+      <td>
+        <select data-ord-status="${o.id}">
+          ${Object.keys(ORDER_STATUS).map(k=>`<option value="${k}" ${o.status===k?'selected':''}>${ORDER_STATUS[k].label}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="btn-danger btn btn-sm" data-del-ord="${o.id}">✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="6" class="empty-note">No orders yet.</td></tr>`;
+
+  body.querySelectorAll('[data-ord-status]').forEach(sel=>sel.addEventListener('change', ()=>{
+    const o = DB.orders.find(x=>x.id===sel.dataset.ordStatus); o.status = sel.value; saveDB('orders'); renderOrders();
+  }));
+  body.querySelectorAll('[data-del-ord]').forEach(b=>b.addEventListener('click', ()=>{
+    DB.orders = DB.orders.filter(o=>o.id!==b.dataset.delOrd); saveDB('orders'); renderOrders(); renderOverview();
+  }));
+}
+document.getElementById('ord-add').addEventListener('click', ()=>{
+  const customer = document.getElementById('ord-customer').value.trim();
+  const productId = document.getElementById('ord-product').value;
+  if(!customer || !productId) return;
+  DB.orders.push({
+    id:uid(), customer, productId,
+    qty:Number(document.getElementById('ord-qty').value)||1,
+    date:document.getElementById('ord-date').value || todayStr(),
+    status:'new'
+  });
+  saveDB('orders');
+  document.getElementById('ord-customer').value='';
+  renderOrders(); renderOverview();
+});
+
+/* ===================== RENDER: CUSTOMERS ===================== */
+function renderCustomers(){
+  const newC = DB.customers.filter(c=>c.type==='new').length;
+  const retC = DB.customers.filter(c=>c.type==='returning').length;
+  document.getElementById('cust-stats').innerHTML = [
+    ['New customers', newC], ['Returning customers', retC], ['Total customers', DB.customers.length]
+  ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${fmtNum(v)}</div></div>`).join('');
+
+  const top = [...DB.customers].sort((a,b)=>b.spent-a.spent).slice(0,5);
+  document.getElementById('cust-top').innerHTML = top.length ? top.map((c,i)=>`
+    <div class="prow" style="padding:7px 0; border-bottom:1px solid var(--line);">
+      <span>${i+1}. ${c.name}</span><strong>${fmtMoney(c.spent)}</strong>
+    </div>`).join('') : `<div class="empty-note">Add customers to see your top spenders.</div>`;
+
+  const body = document.getElementById('cust-table').querySelector('tbody');
+  body.innerHTML = DB.customers.map(c=>`
+    <tr>
+      <td>${c.name}</td>
+      <td><span class="pill ${c.type==='returning'?'good':'yellow'}">${c.type==='returning'?'Returning':'New'}</span></td>
+      <td>${fmtMoney(c.spent)}</td>
+      <td><button class="btn-danger btn btn-sm" data-del-cust="${c.id}">✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="4" class="empty-note">No customers yet.</td></tr>`;
+  body.querySelectorAll('[data-del-cust]').forEach(b=>b.addEventListener('click', ()=>{
+    DB.customers = DB.customers.filter(c=>c.id!==b.dataset.delCust); saveDB('customers'); renderCustomers(); renderOverview();
+  }));
+}
+document.getElementById('cust-add').addEventListener('click', ()=>{
+  const name = document.getElementById('cust-name').value.trim();
+  if(!name) return;
+  DB.customers.push({ id:uid(), name, type:document.getElementById('cust-type').value, spent:Number(document.getElementById('cust-spent').value)||0 });
+  saveDB('customers');
+  document.getElementById('cust-name').value=''; document.getElementById('cust-spent').value='0';
+  renderCustomers(); renderOverview();
+});
+
+/* ===================== RENDER: MARKETING ===================== */
+function renderMarketing(){
+  const sorted = [...DB.marketing].sort((a,b)=>a.date.localeCompare(b.date));
+  const last = sorted[sorted.length-1];
+  document.getElementById('mk-stats').innerHTML = [
+    ['Followers', last?last.followers:0],
+    ['Profile visits', last?last.visits:0],
+    ['Engagement', last?last.engagement:0],
+    ['Story views', last?last.storyviews:0]
+  ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${fmtNum(v)}</div></div>`).join('');
+
+  const body = document.getElementById('mk-table').querySelector('tbody');
+  body.innerHTML = [...sorted].reverse().map(m=>`
+    <tr>
+      <td>${m.date}</td><td>${fmtNum(m.followers)}</td><td>${fmtNum(m.newF)}</td><td>${fmtNum(m.unfollow)}</td>
+      <td>${fmtNum(m.visits)}</td><td>${fmtNum(m.engagement)}</td><td>${fmtNum(m.storyviews)}</td><td>${fmtNum(m.reviews)}</td>
+      <td><button class="btn-danger btn btn-sm" data-del-mk="${m.id}">✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="9" class="empty-note">No snapshots yet.</td></tr>`;
+  body.querySelectorAll('[data-del-mk]').forEach(b=>b.addEventListener('click', ()=>{
+    DB.marketing = DB.marketing.filter(m=>m.id!==b.dataset.delMk); saveDB('marketing'); renderMarketing(); renderOverview();
+  }));
+
+  const ctx = document.getElementById('chart-followers');
+  if(chartFollowers) chartFollowers.destroy();
+  chartFollowers = new Chart(ctx, {
+    type:'line',
+    data:{ labels: sorted.map(m=>m.date), datasets:[{ label:'Followers', data: sorted.map(m=>m.followers), borderColor:'#DDB94A', backgroundColor:'rgba(243,216,121,0.3)', fill:true, tension:0.3 }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+  });
+}
+document.getElementById('mk-add').addEventListener('click', ()=>{
+  const date = document.getElementById('mk-date').value || todayStr();
+  DB.marketing.push({
+    id:uid(), date,
+    followers:Number(document.getElementById('mk-followers').value)||0,
+    newF:Number(document.getElementById('mk-new').value)||0,
+    unfollow:Number(document.getElementById('mk-unfollow').value)||0,
+    visits:Number(document.getElementById('mk-visits').value)||0,
+    engagement:Number(document.getElementById('mk-engagement').value)||0,
+    storyviews:Number(document.getElementById('mk-storyviews').value)||0,
+    reviews:Number(document.getElementById('mk-reviews').value)||0
+  });
+  saveDB('marketing');
+  ['mk-followers','mk-new','mk-unfollow','mk-visits','mk-engagement','mk-storyviews','mk-reviews'].forEach(id=>document.getElementById(id).value='');
+  renderMarketing(); renderOverview();
+});
+
+/* ===================== RENDER: CONTENT PLANNER (kanban) ===================== */
+function renderKanban(containerId, items, stages, onStageChange, onDelete, titleField){
+  const el = document.getElementById(containerId);
+  el.innerHTML = stages.map(([key,label])=>{
+    const inStage = items.filter(it=>it.stage===key);
+    return `<div class="kcol">
+      <h4>${label} (${inStage.length})</h4>
+      ${inStage.map(it=>`
+        <div class="kcard">
+          <button class="kdel" data-kdel="${it.id}">✕</button>
+          <div class="ktitle">${it[titleField]}${it.qty?` <span class="section-sub">×${it.qty}</span>`:''}</div>
+          <select data-kmove="${it.id}">
+            ${stages.map(([k2,l2])=>`<option value="${k2}" ${k2===key?'selected':''}>${l2}</option>`).join('')}
+          </select>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  el.querySelectorAll('[data-kmove]').forEach(sel=>sel.addEventListener('change', ()=>onStageChange(sel.dataset.kmove, sel.value)));
+  el.querySelectorAll('[data-kdel]').forEach(b=>b.addEventListener('click', ()=>onDelete(b.dataset.kdel)));
+}
+function renderContent(){
+  renderKanban('content-kanban', DB.content, CONTENT_STAGES,
+    (id,val)=>{ const it = DB.content.find(x=>x.id===id); it.stage=val; saveDB('content'); renderContent(); },
+    (id)=>{ DB.content = DB.content.filter(x=>x.id!==id); saveDB('content'); renderContent(); },
+    'title'
+  );
+}
+document.getElementById('ct-add').addEventListener('click', ()=>{
+  const title = document.getElementById('ct-title').value.trim();
+  if(!title) return;
+  DB.content.push({id:uid(), title, stage:document.getElementById('ct-stage').value});
+  saveDB('content');
+  document.getElementById('ct-title').value='';
+  renderContent();
+});
+
+/* ===================== RENDER: PRODUCTION (kanban) ===================== */
+function renderProduction(){
+  renderKanban('production-kanban', DB.production, PRODUCTION_STAGES,
+    (id,val)=>{ const it = DB.production.find(x=>x.id===id); it.stage=val; saveDB('production'); renderProduction(); },
+    (id)=>{ DB.production = DB.production.filter(x=>x.id!==id); saveDB('production'); renderProduction(); },
+    'item'
+  );
+}
+document.getElementById('pr-add').addEventListener('click', ()=>{
+  const item = document.getElementById('pr-item').value.trim();
+  if(!item) return;
+  DB.production.push({id:uid(), item, qty:Number(document.getElementById('pr-qty').value)||1, stage:document.getElementById('pr-stage').value});
+  saveDB('production');
+  document.getElementById('pr-item').value='';
+  renderProduction();
+});
+
+/* ===================== INIT ===================== */
+function renderAll(current){
+  populateProductSelects();
+  if(current==='overview') renderOverview();
+  if(current==='products') renderProducts();
+  if(current==='financial') renderFinancial();
+  if(current==='profit') renderProfitPage();
+  if(current==='inventory') renderInventory();
+  if(current==='orders') renderOrders();
+  if(current==='customers') renderCustomers();
+  if(current==='marketing') renderMarketing();
+  if(current==='content') renderContent();
+  if(current==='production') renderProduction();
+}
+
+['rev-date','exp-date','ord-date','mk-date'].forEach(id=>{
+  const el = document.getElementById(id); if(el) el.value = todayStr();
+});
+
+populateProductSelects();
+showPage('overview');
+</script>
+</body>
+</html>
