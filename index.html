@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --blue-deep:#4E86A4;
@@ -42,7 +44,7 @@
   }
   h1,h2,h3,.brandtext{font-family:'Fredoka',sans-serif;}
   ::selection{background:var(--yellow); color:var(--ink);}
-
+ 
   /* ---------- Layout ---------- */
   .app{display:flex; min-height:100vh;}
   .sidebar{
@@ -65,7 +67,7 @@
   .brand-text .name1{font-size:13.5px; font-weight:600; color:#fff; letter-spacing:0.3px;}
   .brand-text .name2{font-size:13.5px; font-weight:600; color:var(--ink);}
   .brand-text .sub{font-size:10.5px; color:rgba(51,46,39,0.65); margin-top:2px;}
-
+ 
   nav.navlist{display:flex; flex-direction:column; gap:3px; margin-top:6px;}
   .navitem{
     display:flex; align-items:center; gap:10px;
@@ -80,9 +82,9 @@
   .navitem:hover{background:rgba(255,255,255,0.35);}
   .navitem.active{background:var(--yellow); box-shadow:0 2px 0 rgba(0,0,0,0.06);}
   .navitem.active .dot{background:var(--ink);}
-
+ 
   .sidebar-foot{margin-top:auto; padding:14px 10px 4px; font-size:10.5px; color:rgba(51,46,39,0.55); line-height:1.5;}
-
+ 
   main{flex:1; min-width:0; padding:26px 34px 60px;}
   .topbar{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
   .topbar h1{font-size:24px; margin:0; font-weight:600; color:var(--ink);}
@@ -94,10 +96,10 @@
     opacity:0; transition:opacity .25s ease;
   }
   .savepill.show{opacity:1;}
-
+ 
   .page{display:none;}
   .page.active{display:block;}
-
+ 
   /* ---------- Beads divider (signature motif) ---------- */
   .beads-divider{display:flex; align-items:center; gap:5px; margin:6px 0 16px;}
   .beads-divider span{width:5px; height:5px; border-radius:50%; background:var(--blue-baby);}
@@ -105,7 +107,7 @@
   .section-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:2px;}
   .section-head h2{font-size:17px; margin:0; font-weight:600;}
   .section-sub{font-size:12.5px; color:var(--ink-soft); margin:2px 0 0;}
-
+ 
   /* ---------- Cards ---------- */
   .grid{display:grid; gap:16px;}
   .grid-4{grid-template-columns:repeat(4,1fr);}
@@ -113,7 +115,7 @@
   .grid-2{grid-template-columns:repeat(2,1fr);}
   @media(max-width:1080px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
   @media(max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
-
+ 
   .card{
     background:var(--paper); border-radius:var(--radius);
     border:1px dashed var(--blue-baby);
@@ -127,10 +129,10 @@
   .stat-card .stat-note.down{color:var(--bad);}
   .stat-card::after{content:""; position:absolute; right:-18px; top:-18px; width:56px; height:56px; border-radius:50%; background:var(--yellow-pale); z-index:0;}
   .stat-card > *{position:relative; z-index:1;}
-
+ 
   .panel{background:var(--paper); border-radius:var(--radius); border:1px solid var(--line); box-shadow:var(--shadow); padding:18px 20px; margin-bottom:18px;}
   .panel h3{margin:0 0 4px; font-size:15px; font-weight:600;}
-
+ 
   /* ---------- Forms ---------- */
   label{font-size:11.5px; font-weight:600; color:var(--ink-soft); display:block; margin-bottom:4px;}
   input,select,textarea{
@@ -142,7 +144,7 @@
   input:focus,select:focus,textarea:focus{outline:2px solid var(--blue-baby); outline-offset:1px; border-color:var(--blue);}
   .field{margin-bottom:10px;}
   .form-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end;}
-
+ 
   button.btn{
     font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
     border:none; border-radius:10px; padding:9px 16px; cursor:pointer;
@@ -156,7 +158,7 @@
   .btn-danger{background:transparent; color:var(--bad); border:1px solid #ecc7bd;}
   .btn-danger:hover{background:var(--bad-bg);}
   .btn-sm{padding:5px 10px; font-size:11.5px; border-radius:8px;}
-
+ 
   /* ---------- Tables ---------- */
   table{width:100%; border-collapse:collapse; font-size:13px;}
   th{text-align:left; font-size:11px; text-transform:none; color:var(--ink-soft); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line);}
@@ -164,19 +166,19 @@
   tr:last-child td{border-bottom:none;}
   .table-wrap{overflow-x:auto;}
   td input, td select{padding:6px 8px; font-size:12.5px;}
-
+ 
   .pill{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:20px;}
   .pill.good{background:var(--good-bg); color:var(--good);}
   .pill.need{background:var(--need-bg); color:var(--need);}
   .pill.mid{background:var(--mid-bg); color:var(--mid);}
   .pill.bad{background:var(--bad-bg); color:var(--bad);}
   .pill.yellow{background:var(--yellow-pale); color:#8a6c1f;}
-
+ 
   /* Product cards */
   .product-card{display:flex; flex-direction:column; gap:10px;}
   .product-card .pname{font-family:'Fredoka',sans-serif; font-size:17px; font-weight:600;}
   .product-card .prow{display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--ink-soft);}
-
+ 
   /* Kanban */
   .kanban{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; overflow-x:auto;}
   @media(max-width:1200px){.kanban{grid-template-columns:repeat(3,1fr);}}
@@ -187,13 +189,13 @@
   .kcard .ktitle{font-weight:600; margin-bottom:6px;}
   .kcard select{font-size:11px; padding:4px 6px;}
   .kcard .kdel{float:right; cursor:pointer; color:var(--bad); font-size:11px; border:none; background:none;}
-
+ 
   .chart-box{height:230px; position:relative;}
   .empty-note{font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:6px 0;}
-
+ 
   .progress-outer{background:var(--blue-pale); border-radius:20px; height:14px; overflow:hidden; margin-top:8px;}
   .progress-inner{background:linear-gradient(90deg,var(--blue),var(--yellow)); height:100%; border-radius:20px; transition:width .4s ease;}
-
+ 
   .hamburger{display:none;}
   @media(max-width:880px){
     .sidebar{position:fixed; z-index:50; left:-260px; transition:left .2s ease; box-shadow:4px 0 18px rgba(0,0,0,0.15);}
@@ -204,6 +206,24 @@
 </style>
 </head>
 <body>
+ 
+<div id="lock-screen" style="position:fixed;inset:0;z-index:500;background:linear-gradient(180deg,#AFD9EA,#7EB8D6);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:34px 28px;max-width:300px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.18);">
+    <div style="width:64px;height:64px;border-radius:50%;background:#4E86A4;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+      <svg viewBox="0 0 60 60" width="44" height="44">
+        <circle cx="30" cy="30" r="28" fill="none" stroke="#F3D879" stroke-width="2" stroke-dasharray="3 4"/>
+        <text x="30" y="26" text-anchor="middle" fill="#fff" font-family="Fredoka, sans-serif" font-size="9.5" font-weight="700">THE BEADS</text>
+        <text x="30" y="38" text-anchor="middle" fill="#fff" font-family="Fredoka, sans-serif" font-size="9.5" font-weight="700">HOUSE</text>
+      </svg>
+    </div>
+    <h2 style="margin:0 0 4px; font-family:'Fredoka',sans-serif; font-size:19px;">The Beads House</h2>
+    <div style="font-size:12.5px; color:#7A7364; margin-bottom:16px;">Enter your PIN to open the dashboard</div>
+    <input id="lock-pin" type="password" inputmode="numeric" placeholder="PIN" style="text-align:center; font-size:18px; letter-spacing:6px; margin-bottom:10px; font-family:'Inter',sans-serif; border:1px solid #E7E1D2; border-radius:9px; padding:9px 10px; width:100%;">
+    <button id="lock-submit" style="width:100%; background:#F3D879; color:#332E27; border:none; border-radius:10px; padding:10px 16px; font-weight:600; font-size:13.5px; cursor:pointer; font-family:'Inter',sans-serif;">Unlock</button>
+    <div id="lock-error" style="color:#C97A6C; font-size:12px; margin-top:9px; display:none;">Incorrect PIN, try again.</div>
+  </div>
+</div>
+ 
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="brand">
@@ -234,19 +254,19 @@
     </nav>
     <div class="sidebar-foot">All data is saved on this device only, in this browser.</div>
   </aside>
-
+ 
   <main>
     <div class="hamburger" id="hamburger">☰ Menu</div>
-
+ 
     <!-- OVERVIEW -->
     <div class="page" id="page-overview">
       <div class="topbar">
         <div><h1>Overview</h1><div class="today" id="todayLabel"></div></div>
         <span class="savepill" id="savepill-overview">✓ Saved</span>
       </div>
-
+ 
       <div class="grid grid-4" id="ov-stats"></div>
-
+ 
       <div class="grid grid-3" style="margin-top:16px;">
         <div class="panel">
           <h3>Most sold product</h3>
@@ -264,7 +284,7 @@
           <div id="ov-followers"></div>
         </div>
       </div>
-
+ 
       <div class="panel" style="margin-top:2px;">
         <h3>This month's sales vs target</h3>
         <div class="beads-divider"><span></span><span></span><span></span></div>
@@ -279,7 +299,7 @@
         <div class="progress-outer"><div class="progress-inner" id="ov-progress-bar" style="width:0%"></div></div>
       </div>
     </div>
-
+ 
     <!-- PRODUCTS -->
     <div class="page" id="page-products">
       <div class="topbar">
@@ -289,7 +309,7 @@
           <button class="btn btn-primary btn-sm" id="prod-add-toggle">+ Add product</button>
         </div>
       </div>
-
+ 
       <div class="panel" id="prod-add-panel" style="display:none;">
         <h3>New product</h3>
         <div class="beads-divider"><span></span><span></span><span></span></div>
@@ -306,19 +326,19 @@
           <button class="btn btn-ghost" id="prod-new-cancel">Cancel</button>
         </div>
       </div>
-
+ 
       <div class="grid grid-2" id="products-list"></div>
     </div>
-
+ 
     <!-- FINANCIAL -->
     <div class="page" id="page-financial">
       <div class="topbar">
         <div><h1>Financial Dashboard</h1><div class="today">Revenue and expenses</div></div>
         <span class="savepill" id="savepill-financial">✓ Saved</span>
       </div>
-
+ 
       <div class="grid grid-4" id="fin-revenue-stats"></div>
-
+ 
       <div class="grid grid-2" style="margin-top:16px; align-items:start;">
         <div class="panel">
           <h3>Add a sale (revenue)</h3>
@@ -332,7 +352,7 @@
           <button class="btn btn-primary" id="rev-add">Save sale</button>
           <div class="table-wrap" style="margin-top:14px;"><table id="rev-table"><thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div>
         </div>
-
+ 
         <div class="panel">
           <h3>Add an expense</h3>
           <div class="beads-divider"><span></span><span></span><span></span></div>
@@ -351,14 +371,14 @@
           <div class="table-wrap" style="margin-top:14px;"><table id="exp-table"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div>
         </div>
       </div>
-
+ 
       <div class="panel">
         <h3>Revenue per product</h3>
         <div class="beads-divider"><span></span><span></span><span></span></div>
         <div class="chart-box"><canvas id="chart-rev-product"></canvas></div>
       </div>
     </div>
-
+ 
     <!-- PROFIT -->
     <div class="page" id="page-profit">
       <div class="topbar">
@@ -378,7 +398,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- INVENTORY -->
     <div class="page" id="page-inventory">
       <div class="topbar">
@@ -411,7 +431,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- ORDERS -->
     <div class="page" id="page-orders">
       <div class="topbar">
@@ -436,7 +456,7 @@
         <div class="table-wrap"><table id="ord-table"><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
       </div>
     </div>
-
+ 
     <!-- CUSTOMERS -->
     <div class="page" id="page-customers">
       <div class="topbar">
@@ -467,7 +487,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- MARKETING -->
     <div class="page" id="page-marketing">
       <div class="topbar">
@@ -501,7 +521,7 @@
         <div class="table-wrap"><table id="mk-table"><thead><tr><th>Date</th><th>Followers</th><th>New</th><th>Unfollows</th><th>Visits</th><th>Engagement</th><th>Story views</th><th>Reviews</th><th></th></tr></thead><tbody></tbody></table></div>
       </div>
     </div>
-
+ 
     <!-- CONTENT PLANNER -->
     <div class="page" id="page-content">
       <div class="topbar">
@@ -521,7 +541,7 @@
       </div>
       <div class="kanban" id="content-kanban"></div>
     </div>
-
+ 
     <!-- PRODUCTION -->
     <div class="page" id="page-production">
       <div class="topbar">
@@ -542,17 +562,17 @@
       </div>
       <div class="kanban" id="production-kanban"></div>
     </div>
-
+ 
   </main>
 </div>
-
+ 
 <script>
-/* ===================== DATA LAYER ===================== */
+/* ===================== DATA LAYER (Firebase Firestore + local cache) ===================== */
 const DB_KEY = 'beadsHouseDB_v1';
-
+ 
 function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
-
+ 
 function defaultDB(){
   return {
     meta:{ monthlyTarget: 0 },
@@ -570,25 +590,66 @@ function defaultDB(){
     production:[] // {id,item,qty,stage}
   };
 }
-
-let DB = loadDB();
-
-function loadDB(){
+ 
+function mergeWithDefaults(parsed){
+  const d = defaultDB();
+  if(!parsed) return d;
+  return Object.assign(d, parsed, {
+    products: parsed.products && parsed.products.length ? parsed.products : d.products,
+    meta: Object.assign(d.meta, parsed.meta||{})
+  });
+}
+ 
+function loadLocalCache(){
   try{
     const raw = localStorage.getItem(DB_KEY);
     if(!raw) return defaultDB();
-    const parsed = JSON.parse(raw);
-    const d = defaultDB();
-    return Object.assign(d, parsed, {
-      products: parsed.products && parsed.products.length ? parsed.products : d.products,
-      meta: Object.assign(d.meta, parsed.meta||{})
-    });
+    return mergeWithDefaults(JSON.parse(raw));
   }catch(e){ return defaultDB(); }
 }
-
+function cacheLocally(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){}
+}
+ 
+// Start instantly with whatever was last cached on this device, then sync with the cloud.
+let DB = loadLocalCache();
+let currentPage = 'overview';
+ 
+const firebaseConfig = {
+  apiKey: "AIzaSyC4FHRsI66z-lrgUrPwfObLqJTUEOyk3oI",
+  authDomain: "the-beads-house-dashboard.firebaseapp.com",
+  projectId: "the-beads-house-dashboard",
+  storageBucket: "the-beads-house-dashboard.firebasestorage.app",
+  messagingSenderId: "985652406166",
+  appId: "1:985652406166:web:b459845fd41c0251d45fb7"
+};
+firebase.initializeApp(firebaseConfig);
+const cloudDB = firebase.firestore();
+const docRef = cloudDB.collection('beadsHouse').doc('mainData');
+let cloudReady = false;
+let applyingRemote = false;
+ 
+docRef.onSnapshot(snap=>{
+  if(snap.exists){
+    applyingRemote = true;
+    DB = mergeWithDefaults(snap.data());
+    cacheLocally();
+    renderAll(currentPage);
+    applyingRemote = false;
+  } else {
+    // Nothing in the cloud yet — push up whatever we have locally (default or cached).
+    docRef.set(DB).catch(err=>console.error('Initial cloud push failed', err));
+  }
+  cloudReady = true;
+}, err=>{
+  console.error('Cloud connection issue — working from local cache only.', err);
+});
+ 
 let saveTimer=null;
 function saveDB(pageKey){
-  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  if(applyingRemote) return; // don't re-save data we just received from the cloud
+  cacheLocally();
+  docRef.set(DB).catch(err=>console.error('Cloud save failed, saved locally only.', err));
   if(pageKey){
     const pill = document.getElementById('savepill-'+pageKey);
     if(pill){
@@ -598,7 +659,7 @@ function saveDB(pageKey){
     }
   }
 }
-
+ 
 /* ===================== HELPERS ===================== */
 function fmtMoney(n){
   n = Number(n)||0;
@@ -618,7 +679,7 @@ function statusPill(status, map){
   const m = map[status] || {label:status, cls:'mid'};
   return `<span class="pill ${m.cls}">${m.label}</span>`;
 }
-
+ 
 const PRODUCT_STATUS = {
   idea:{label:'Idea', cls:'need'},
   progress:{label:'In progress', cls:'mid'},
@@ -637,10 +698,11 @@ const CONTENT_STAGES = [
 const PRODUCTION_STAGES = [
   ['queued','Queued'],['cutting','Cutting'],['embroidering','Embroidering'],['assembling','Assembling'],['finishing','Finishing'],['ready','Ready']
 ];
-
+ 
 /* ===================== NAVIGATION ===================== */
 const pages = ['overview','products','financial','profit','inventory','orders','customers','marketing','content','production'];
 function showPage(p){
+  currentPage = p;
   pages.forEach(name=>{
     document.getElementById('page-'+name).classList.toggle('active', name===p);
   });
@@ -658,7 +720,7 @@ document.getElementById('navlist').addEventListener('click', e=>{
 document.getElementById('hamburger').addEventListener('click', ()=>{
   document.getElementById('sidebar').classList.toggle('open');
 });
-
+ 
 /* ===================== RENDER: OVERVIEW ===================== */
 function computeTotals(){
   const totalRevenue = DB.revenue.reduce((s,r)=>s+Number(r.amount||0),0);
@@ -670,9 +732,9 @@ function renderOverview(){
   const today = todayStr();
   const thisMonth = today.slice(0,7);
   const monthRevenue = DB.revenue.filter(r=>monthKey(r.date)===thisMonth).reduce((s,r)=>s+Number(r.amount||0),0);
-
+ 
   document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
-
+ 
   const stats = [
     {label:'Total revenue', value:fmtMoney(totalRevenue)},
     {label:'Total expenses', value:fmtMoney(totalExpenses)},
@@ -682,7 +744,7 @@ function renderOverview(){
   document.getElementById('ov-stats').innerHTML = stats.map(s=>`
     <div class="card stat-card"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>
   `).join('');
-
+ 
   // best seller
   const qtyByProduct = {};
   DB.revenue.forEach(r=>{ qtyByProduct[r.productId] = (qtyByProduct[r.productId]||0) + Number(r.qty||0); });
@@ -690,13 +752,13 @@ function renderOverview(){
   document.getElementById('ov-bestseller').innerHTML = bestId
     ? `<div class="stat-value" style="font-size:19px;">${productName(bestId)}</div><div class="section-sub">${fmtNum(qtyByProduct[bestId])} sold</div>`
     : `<div class="empty-note">No sales logged yet.</div>`;
-
+ 
   // available products
   const availableList = DB.products.filter(p=>p.status==='available');
   document.getElementById('ov-available').innerHTML = availableList.length
     ? availableList.map(p=>`<div style="margin-bottom:4px;">${p.name} ${statusPill(p.status, PRODUCT_STATUS)}</div>`).join('')
     : `<div class="empty-note">No product marked available yet.</div>`;
-
+ 
   // followers
   const mk = [...DB.marketing].sort((a,b)=>a.date.localeCompare(b.date));
   const last = mk[mk.length-1];
@@ -709,7 +771,7 @@ function renderOverview(){
   } else {
     document.getElementById('ov-followers').innerHTML = `<div class="empty-note">Add a marketing snapshot to see followers.</div>`;
   }
-
+ 
   // customers count card injected into stats row visually via available card row — keep simple: add extra row
   // target
   document.getElementById('ov-target-input').value = DB.meta.monthlyTarget || '';
@@ -719,7 +781,7 @@ function renderOverview(){
   document.getElementById('ov-target-text').textContent = target>0
     ? `${fmtMoney(monthRevenue)} of ${fmtMoney(target)} target this month (${pct.toFixed(0)}%)`
     : `Set a monthly target to track progress. This month's sales so far: ${fmtMoney(monthRevenue)}.`;
-
+ 
   // extra: customers count as an additional stat card appended
   document.getElementById('ov-stats').innerHTML += `
     <div class="card stat-card"><div class="stat-label">Customers</div><div class="stat-value">${fmtNum(DB.customers.length)}</div></div>
@@ -729,7 +791,7 @@ document.getElementById('ov-target-save').addEventListener('click', ()=>{
   DB.meta.monthlyTarget = Number(document.getElementById('ov-target-input').value)||0;
   saveDB('overview'); renderOverview();
 });
-
+ 
 /* ===================== RENDER: PRODUCTS ===================== */
 function renderProducts(){
   document.getElementById('products-list').innerHTML = DB.products.map(p=>`
@@ -757,7 +819,7 @@ function renderProducts(){
       <button class="btn btn-primary btn-sm prod-save" data-pid="${p.id}">Save</button>
     </div>
   `).join('');
-
+ 
   document.querySelectorAll('.prod-save').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const pid = btn.dataset.pid;
@@ -769,7 +831,7 @@ function renderProducts(){
       saveDB('products'); renderProducts(); renderOverview(); populateProductSelects();
     });
   });
-
+ 
   document.querySelectorAll('.prod-delete').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const pid = btn.dataset.pid;
@@ -780,7 +842,7 @@ function renderProducts(){
     });
   });
 }
-
+ 
 document.getElementById('prod-add-toggle').addEventListener('click', ()=>{
   const panel = document.getElementById('prod-add-panel');
   panel.style.display = panel.style.display==='none' ? 'block' : 'none';
@@ -807,7 +869,7 @@ document.getElementById('prod-new-save').addEventListener('click', ()=>{
   document.getElementById('prod-add-panel').style.display='none';
   renderProducts(); renderOverview(); populateProductSelects();
 });
-
+ 
 function populateProductSelects(){
   const opts = DB.products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   ['rev-product','ord-product'].forEach(id=>{
@@ -815,21 +877,21 @@ function populateProductSelects(){
     if(el){ const cur = el.value; el.innerHTML = opts; if(cur) el.value = cur; }
   });
 }
-
+ 
 /* ===================== RENDER: FINANCIAL ===================== */
 let chartRevProduct=null, chartProfitMonth=null, chartFollowers=null;
-
+ 
 function renderFinancial(){
   const today = todayStr();
   const dayRevenue = DB.revenue.filter(r=>r.date===today).reduce((s,r)=>s+Number(r.amount||0),0);
   const weekRevenue = DB.revenue.filter(r=>isSameWeek(r.date)).reduce((s,r)=>s+Number(r.amount||0),0);
   const monthRevenue = DB.revenue.filter(r=>monthKey(r.date)===today.slice(0,7)).reduce((s,r)=>s+Number(r.amount||0),0);
   const totalRevenue = DB.revenue.reduce((s,r)=>s+Number(r.amount||0),0);
-
+ 
   document.getElementById('fin-revenue-stats').innerHTML = [
     ['Today', dayRevenue], ['This week', weekRevenue], ['This month', monthRevenue], ['Total', totalRevenue]
   ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l} revenue</div><div class="stat-value">${fmtMoney(v)}</div></div>`).join('');
-
+ 
   // revenue table
   const revBody = document.getElementById('rev-table').querySelector('tbody');
   revBody.innerHTML = [...DB.revenue].sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`
@@ -840,7 +902,7 @@ function renderFinancial(){
   revBody.querySelectorAll('[data-del-rev]').forEach(b=>b.addEventListener('click', ()=>{
     DB.revenue = DB.revenue.filter(r=>r.id!==b.dataset.delRev); saveDB('financial'); renderAll('financial'); renderOverview();
   }));
-
+ 
   // expenses table
   const expBody = document.getElementById('exp-table').querySelector('tbody');
   expBody.innerHTML = [...DB.expenses].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`
@@ -851,7 +913,7 @@ function renderFinancial(){
   expBody.querySelectorAll('[data-del-exp]').forEach(b=>b.addEventListener('click', ()=>{
     DB.expenses = DB.expenses.filter(x=>x.id!==b.dataset.delExp); saveDB('financial'); renderAll('financial'); renderOverview();
   }));
-
+ 
   // chart: revenue per product
   const byProduct = {};
   DB.products.forEach(p=>byProduct[p.id]=0);
@@ -886,7 +948,7 @@ document.getElementById('exp-add').addEventListener('click', ()=>{
   document.getElementById('exp-amount').value=''; document.getElementById('exp-note').value='';
   renderFinancial(); renderOverview(); renderProfitPage();
 });
-
+ 
 /* ===================== RENDER: PROFIT ===================== */
 function renderProfitPage(){
   const {totalRevenue, totalExpenses, netIncome} = computeTotals();
@@ -895,13 +957,13 @@ function renderProfitPage(){
   const monthRevenue = DB.revenue.filter(r=>monthKey(r.date)===thisMonth).reduce((s,r)=>s+Number(r.amount||0),0);
   const monthExpenses = DB.expenses.filter(e=>monthKey(e.date)===thisMonth).reduce((s,e)=>s+Number(e.amount||0),0);
   const monthProfit = monthRevenue-monthExpenses;
-
+ 
   document.getElementById('profit-stats').innerHTML = [
     ['Net profit (all time)', netIncome],
     ['Profit this month', monthProfit],
     ['Revenue this month', monthRevenue]
   ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${fmtMoney(v)}</div></div>`).join('');
-
+ 
   // profit per product = revenue - (cost*qty)
   const revByProduct={}, qtyByProduct={};
   DB.revenue.forEach(r=>{ revByProduct[r.productId]=(revByProduct[r.productId]||0)+Number(r.amount||0); qtyByProduct[r.productId]=(qtyByProduct[r.productId]||0)+Number(r.qty||0); });
@@ -913,7 +975,7 @@ function renderProfitPage(){
       <span>${p.name} <span class="section-sub">(${fmtNum(qty)} sold)</span></span><strong>${fmtMoney(profit)}</strong>
     </div>`;
   }).join('');
-
+ 
   // month profit trend (last 6 months)
   const months = [];
   const d = new Date();
@@ -931,7 +993,7 @@ function renderProfitPage(){
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
   });
 }
-
+ 
 /* ===================== RENDER: INVENTORY ===================== */
 function renderInventory(){
   const rawRows = DB.inventory.filter(i=>i.type==='raw');
@@ -962,7 +1024,7 @@ document.getElementById('inv-add').addEventListener('click', ()=>{
   document.getElementById('inv-name').value=''; document.getElementById('inv-qty').value='';
   renderInventory();
 });
-
+ 
 /* ===================== RENDER: ORDERS ===================== */
 function renderOrders(){
   const counts = {new:0, embroidering:0, ready:0, delivered:0, canceled:0};
@@ -970,7 +1032,7 @@ function renderOrders(){
   document.getElementById('orders-stats').innerHTML = Object.keys(ORDER_STATUS).map(k=>`
     <div class="card stat-card"><div class="stat-label">${ORDER_STATUS[k].label}</div><div class="stat-value">${fmtNum(counts[k])}</div></div>
   `).join('');
-
+ 
   const body = document.getElementById('ord-table').querySelector('tbody');
   body.innerHTML = [...DB.orders].sort((a,b)=>b.date.localeCompare(a.date)).map(o=>`
     <tr>
@@ -982,7 +1044,7 @@ function renderOrders(){
       </td>
       <td><button class="btn-danger btn btn-sm" data-del-ord="${o.id}">✕</button></td>
     </tr>`).join('') || `<tr><td colspan="6" class="empty-note">No orders yet.</td></tr>`;
-
+ 
   body.querySelectorAll('[data-ord-status]').forEach(sel=>sel.addEventListener('change', ()=>{
     const o = DB.orders.find(x=>x.id===sel.dataset.ordStatus); o.status = sel.value; saveDB('orders'); renderOrders();
   }));
@@ -1004,7 +1066,7 @@ document.getElementById('ord-add').addEventListener('click', ()=>{
   document.getElementById('ord-customer').value='';
   renderOrders(); renderOverview();
 });
-
+ 
 /* ===================== RENDER: CUSTOMERS ===================== */
 function renderCustomers(){
   const newC = DB.customers.filter(c=>c.type==='new').length;
@@ -1012,13 +1074,13 @@ function renderCustomers(){
   document.getElementById('cust-stats').innerHTML = [
     ['New customers', newC], ['Returning customers', retC], ['Total customers', DB.customers.length]
   ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${fmtNum(v)}</div></div>`).join('');
-
+ 
   const top = [...DB.customers].sort((a,b)=>b.spent-a.spent).slice(0,5);
   document.getElementById('cust-top').innerHTML = top.length ? top.map((c,i)=>`
     <div class="prow" style="padding:7px 0; border-bottom:1px solid var(--line);">
       <span>${i+1}. ${c.name}</span><strong>${fmtMoney(c.spent)}</strong>
     </div>`).join('') : `<div class="empty-note">Add customers to see your top spenders.</div>`;
-
+ 
   const body = document.getElementById('cust-table').querySelector('tbody');
   body.innerHTML = DB.customers.map(c=>`
     <tr>
@@ -1039,7 +1101,7 @@ document.getElementById('cust-add').addEventListener('click', ()=>{
   document.getElementById('cust-name').value=''; document.getElementById('cust-spent').value='0';
   renderCustomers(); renderOverview();
 });
-
+ 
 /* ===================== RENDER: MARKETING ===================== */
 function renderMarketing(){
   const sorted = [...DB.marketing].sort((a,b)=>a.date.localeCompare(b.date));
@@ -1050,7 +1112,7 @@ function renderMarketing(){
     ['Engagement', last?last.engagement:0],
     ['Story views', last?last.storyviews:0]
   ].map(([l,v])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${fmtNum(v)}</div></div>`).join('');
-
+ 
   const body = document.getElementById('mk-table').querySelector('tbody');
   body.innerHTML = [...sorted].reverse().map(m=>`
     <tr>
@@ -1061,7 +1123,7 @@ function renderMarketing(){
   body.querySelectorAll('[data-del-mk]').forEach(b=>b.addEventListener('click', ()=>{
     DB.marketing = DB.marketing.filter(m=>m.id!==b.dataset.delMk); saveDB('marketing'); renderMarketing(); renderOverview();
   }));
-
+ 
   const ctx = document.getElementById('chart-followers');
   if(chartFollowers) chartFollowers.destroy();
   chartFollowers = new Chart(ctx, {
@@ -1086,7 +1148,7 @@ document.getElementById('mk-add').addEventListener('click', ()=>{
   ['mk-followers','mk-new','mk-unfollow','mk-visits','mk-engagement','mk-storyviews','mk-reviews'].forEach(id=>document.getElementById(id).value='');
   renderMarketing(); renderOverview();
 });
-
+ 
 /* ===================== RENDER: CONTENT PLANNER (kanban) ===================== */
 function renderKanban(containerId, items, stages, onStageChange, onDelete, titleField){
   const el = document.getElementById(containerId);
@@ -1122,7 +1184,7 @@ document.getElementById('ct-add').addEventListener('click', ()=>{
   document.getElementById('ct-title').value='';
   renderContent();
 });
-
+ 
 /* ===================== RENDER: PRODUCTION (kanban) ===================== */
 function renderProduction(){
   renderKanban('production-kanban', DB.production, PRODUCTION_STAGES,
@@ -1139,7 +1201,7 @@ document.getElementById('pr-add').addEventListener('click', ()=>{
   document.getElementById('pr-item').value='';
   renderProduction();
 });
-
+ 
 /* ===================== INIT ===================== */
 function renderAll(current){
   populateProductSelects();
@@ -1154,13 +1216,40 @@ function renderAll(current){
   if(current==='content') renderContent();
   if(current==='production') renderProduction();
 }
-
+ 
 ['rev-date','exp-date','ord-date','mk-date'].forEach(id=>{
   const el = document.getElementById(id); if(el) el.value = todayStr();
 });
-
+ 
 populateProductSelects();
 showPage('overview');
+ 
+/* ===================== PIN LOCK ===================== */
+// Change this to whatever PIN you want. This is a light privacy deterrent, not bank-level security.
+const APP_PIN = "2580";
+(function(){
+  const lockScreen = document.getElementById('lock-screen');
+  if(localStorage.getItem('beadsHouseUnlocked') === '1'){
+    lockScreen.style.display = 'none';
+    return;
+  }
+  const pinInput = document.getElementById('lock-pin');
+  const errorMsg = document.getElementById('lock-error');
+  function tryUnlock(){
+    if(pinInput.value.trim() === APP_PIN){
+      localStorage.setItem('beadsHouseUnlocked', '1');
+      lockScreen.style.display = 'none';
+    } else {
+      errorMsg.style.display = 'block';
+      pinInput.value = '';
+      pinInput.focus();
+    }
+  }
+  document.getElementById('lock-submit').addEventListener('click', tryUnlock);
+  pinInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') tryUnlock(); });
+  setTimeout(()=>pinInput.focus(), 200);
+})();
 </script>
 </body>
 </html>
+Add cloud sync and PIN lock
